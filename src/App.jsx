@@ -23,7 +23,7 @@ function App() {
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>}>Home</Route>
-          <Route path='/todo/:id' element={<MainMenu />}>Main Menu</Route>
+          <Route path='/todo' element={<MainMenu />}>Main Menu</Route>
           <Route path='/api' element={<FetchApi />}>Fetch Api</Route>
 
           <Route path='*' element={<h1>Not Found</h1>}></Route>

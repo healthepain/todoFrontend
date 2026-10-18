@@ -8,12 +8,23 @@ function MainMenu() {
     const [filter, setFilter] = useState("all")
     const [todoInput, setTodoInput] = useState("")
 
-    const [todos, settodos] = useState([
-        {
-            title: "contoh todo",
-            status: "pending",
-        },
-    ])
+    const [todos, settodos] = useState([])
+
+    useEffect(() => {
+        const fetchApi = () => {
+            fetch('http://localhost:3000/todos')
+                .then((ress) => ress.json())
+                .then((data) => {
+                    settodos(data.map((todo) => {
+                        return {
+                            title: todo.title,
+                            status: todo.is_completed ? "pending" : "completed"
+                        }
+                    }))
+                })
+        }
+        fetchApi()
+    }, [])
 
     const { id } = useParams()
 
