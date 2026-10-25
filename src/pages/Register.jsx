@@ -1,150 +1,129 @@
-import { useState } from 'react';
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function Register() {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    agreeTerms: false,
-  });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+  const { register } = useContext(AuthContext)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Konfirmasi kata sandi tidak cocok!');
-      return;
-    }
-
-    if (!formData.agreeTerms) {
-      setError('Anda harus menyetujui Syarat & Ketentuan.');
-      return;
-    }
-
-    setError('');
-    // Jalankan logika submit data / API call di sini
-    console.log('Data pendaftaran:', formData);
-    alert('Registrasi berhasil!');
-  };
+    await register({
+      name: name,
+      email: email,
+      password: password
+    })
+  }
 
   return (
     <div className="bg-slate-100 font-sans min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
-        
+
         {/* Header Form */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Buat Akun Baru</h2>
-          <p className="text-sm text-slate-500 mt-2">Daftar sekarang untuk memulai layanan kami</p>
+          <h2 className="text-3xl font-bold text-slate-800 tracking-tight">
+            Buat Akun Baru
+          </h2>
+          <p className="text-sm text-slate-500 mt-2">
+            Daftar sekarang untuk memulai layanan kami
+          </p>
         </div>
 
-        {/* Pesan Error jika validation gagal */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs rounded">
-            {error}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} method="POST" action="">
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
           {/* Nama Lengkap */}
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-semibold text-slate-700 mb-1">
+          <div className="mb-4">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-semibold text-slate-700 mb-1"
+            >
               Nama Lengkap
             </label>
             <input
               type="text"
               id="fullName"
               name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="John Doe"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 placeholder:text-slate-400 text-slate-800 text-sm"
             />
           </div>
 
           {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1">
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-slate-700 mb-1"
+            >
               Alamat Email
             </label>
             <input
               type="email"
               id="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 placeholder:text-slate-400 text-slate-800 text-sm"
             />
           </div>
 
           {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-1">
+          <div className="mb-4">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-slate-700 mb-1"
+            >
               Kata Sandi
             </label>
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type="password"
                 id="password"
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 placeholder:text-slate-400 text-slate-800 text-sm"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-500 hover:text-indigo-600 focus:outline-none"
               >
-                {showPassword ? 'Sembunyikan' : 'Lihat'}
+                Lihat
               </button>
             </div>
           </div>
 
           {/* Konfirmasi Password */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700 mb-1">
-              Konfirmasi Kata Sandi
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 placeholder:text-slate-400 text-slate-800 text-sm"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-500 hover:text-indigo-600 focus:outline-none"
-              >
-                {showConfirmPassword ? 'Sembunyikan' : 'Lihat'}
-              </button>
-            </div>
+          {/* <div className="mb-4">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-semibold text-slate-700 mb-1"
+          >
+            Konfirmasi Kata Sandi
+          </label>
+          <div className="relative">
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="••••••••"
+              className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 placeholder:text-slate-400 text-slate-800 text-sm"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-500 hover:text-indigo-600 focus:outline-none"
+            >
+              Lihat
+            </button>
           </div>
+        </div> */}
 
           {/* Checkbox Syarat & Ketentuan */}
           <div className="flex items-center pt-1">
@@ -152,17 +131,24 @@ function Register() {
               type="checkbox"
               id="agreeTerms"
               name="agreeTerms"
-              checked={formData.agreeTerms}
-              onChange={handleChange}
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded cursor-pointer"
             />
-            <label htmlFor="agreeTerms" className="ml-2 block text-xs text-slate-600 cursor-pointer">
-              Saya menyetujui{' '}
-              <a href="#" className="text-indigo-600 font-medium hover:underline">
+            <label
+              htmlFor="agreeTerms"
+              className="ml-2 block text-xs text-slate-600 cursor-pointer"
+            >
+              Saya menyetujui{" "}
+              <a
+                href="#"
+                className="text-indigo-600 font-medium hover:underline"
+              >
                 Syarat & Ketentuan
-              </a>{' '}
-              serta{' '}
-              <a href="#" className="text-indigo-600 font-medium hover:underline">
+              </a>{" "}
+              serta{" "}
+              <a
+                href="#"
+                className="text-indigo-600 font-medium hover:underline"
+              >
                 Kebijakan Privasi
               </a>
               .
@@ -172,11 +158,13 @@ function Register() {
           {/* Tombol Submit */}
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 text-sm mt-2"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 text-sm mt-6"
           >
             Daftar
           </button>
+
         </form>
+
 
         {/* Divider */}
         <div className="relative my-6">
@@ -184,11 +172,13 @@ function Register() {
             <div className="w-full border-t border-slate-200"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-slate-400">Atau daftar dengan</span>
+            <span className="bg-white px-2 text-slate-400">
+              Atau daftar dengan
+            </span>
           </div>
         </div>
 
-        {/* Tombol Social Login */}
+        {/* Tombol Google */}
         <button
           type="button"
           className="w-full flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2.5 px-4 rounded-lg transition duration-200 text-sm shadow-sm"
@@ -214,10 +204,13 @@ function Register() {
           Google
         </button>
 
-        {/* Footer / Link ke Login */}
+        {/* Footer / Link Login */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          Sudah punya akun?{' '}
-          <a href="#" className="text-indigo-600 font-semibold hover:underline">
+          Sudah punya akun?{" "}
+          <a
+            href="#"
+            className="text-indigo-600 font-semibold hover:underline"
+          >
             Masuk di sini
           </a>
         </p>
