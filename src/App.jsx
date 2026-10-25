@@ -8,6 +8,8 @@ import MainMenu from './pages/MainMenu';
 import FetchApi from './pages/FetchApi';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Register from './pages/Register';
+
 
 function App() {
 
@@ -18,6 +20,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/login' element={<Login />}>Login</Route>
+          <Route path='/register' element={<Register />}>Login</Route>
 
           <Route path='/' element={
             <ProtectedRoute>

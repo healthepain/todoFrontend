@@ -1,32 +1,51 @@
 import { useEffect, useState } from 'react'
 import Todos from '../components/Todos'
 import { useMutation } from "@tanstack/react-query"
-import { Link, NavLink, useParams } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import { getTodos, createTodo, updateTodo, deleteTodo } from '../services/TodoService'
 
 
 function MainMenu() {
     const [filter, setFilter] = useState("all")
     const [todoInput, setTodoInput] = useState("")
-
     const [todos, settodos] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("");
+    const [refresh, setRefresh] = useState(false)
+
 
     useEffect(() => {
-        const fetchApi = () => {
-            fetch('http://localhost:3000/todos')
-                .then((ress) => ress.json())
-                .then((data) => {
-                    settodos(data.map((todo) => {
-                        return {
-                            title: todo.title,
-                            status: todo.is_completed ? "pending" : "completed"
-                        }
-                    }))
-                })
+        const fetchApi = async () => {
+
+            try {
+
+                setLoading(true)
+
+                const todos = await getTodos()
+
+                settodos(todos.map((todo) => {
+                    return {
+                        id: todo.id,
+                        title: todo.title,
+                        status: todo.is_completed ? "complete" : "pending",
+                        is_completed: todo.is_completed,
+                    }
+                }))
+
+
+            } catch (e) {
+                setError(e)
+            } finally {
+                // setLoading(false)
+                console.log("done");
+                setLoading(false)
+            }
+
         }
         fetchApi()
-    }, [])
+    }, [refresh])
 
-    const { id } = useParams()
+
 
     useEffect(() => {
 
@@ -43,12 +62,14 @@ function MainMenu() {
     })
 
     const mutation = useMutation({
-        mutationFn: () => {
-            settodos((prev) => [...prev, {
+        mutationFn: async () => {
+            await createTodo({
                 title: todoInput,
-                status: "pending"
-            }])
+                user_id: 1,
+
+            })
             setTodoInput("")
+            setRefresh((prev) => !prev)
         }
     })
 
@@ -56,18 +77,17 @@ function MainMenu() {
         mutation.mutate()
     }
 
-    const onDeleteTodo = (idx) => {
-        settodos((prev) => prev.filter((todo, index) => index !== idx))
+    const onDeleteTodo = async (id) => {
+        await deleteTodo(id)
+        setRefresh((prev) => !prev)
     }
 
-    const onEditTodo = (idx) => {
-        settodos((prev) =>
-            prev.map((todo, index) =>
-                index === idx
-                    ? {
-                        ...todo, status: todo.status === "pending" ? "complete" : "pending"
-                    } : todo)
-        )
+    const onEditTodo = async (todo) => {
+        await updateTodo({
+            ...todo,
+            is_completed: !todo.is_completed
+        })
+        setRefresh((prev) => !prev)
     }
 
     return (
@@ -84,31 +104,31 @@ function MainMenu() {
                     <Link className="bg-blue-600 text-white font-semibold px-4 py-1 rounded-md shadow-md hover:bg-blue-800" to="/api">Api</Link><br />
                 </div>
 
-                <div className='bg-white flex flex-col items-center justify-center w-[450px] mt-32 gap-4 py-10 px-6 rounded-lg shadow-lg '>
-                    <div className='mb-6 font-thin text-sm'>
-                        todo : {id}
-                    </div>
+                <div className='bg-white flex flex-col items-center justify-center w-[450px] mt-8 gap-4 py-10 px-6 rounded-lg shadow-lg '>
+
+                    {/* tambah todo */}
                     <div className='flex gap-2 w-full'>
                         <input className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400"
                             type="text"
                             placeholder="Masukkan todo..."
-                            type="text"
                             value={todoInput}
                             onChange={(e) => setTodoInput(e.target.value)} />
                         <button className="bg-blue-600 text-white font-semibold px-4 py-1 rounded-md shadow-md hover:bg-blue-800" onClick={onAddTodo}>  tambah</button>
                     </div>
+
                     <div className='flex gap-2 items-center justify-center w-full'>
                         <button className="bg-blue-600 text-white font-semibold w-full py-1 rounded-md shadow-md hover:bg-blue-800" onClick={() => setFilter("all")}>All</button>
                         <button className="bg-blue-600 text-white font-semibold w-full py-1 rounded-md shadow-md hover:bg-blue-800" onClick={() => setFilter("pending")}>Pending</button>
                         <button className="bg-blue-600 text-white font-semibold w-full py-1 rounded-md shadow-md hover:bg-blue-800" onClick={() => setFilter("complete")}>Complete</button>
                     </div>
-                    <div className='w-full flex flex-col gap-2'>
 
+                    <div className='w-full flex flex-col gap-2'>
+                        {loading && <div>loading...</div>}
+                        {error && <div>{error}</div>}
                         {todosFiltered.map((items, index) => (
                             <Todos
                                 key={index}
                                 todo={items}
-                                index={index}
                                 onDeleteTodo={onDeleteTodo}
                                 onEditTodo={onEditTodo}
                             />
