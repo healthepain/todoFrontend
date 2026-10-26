@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import Todos from '../components/Todos'
 import { useMutation } from "@tanstack/react-query"
 import { Link, NavLink } from 'react-router-dom'
 import { getTodos, createTodo, updateTodo, deleteTodo } from '../services/TodoService'
+import { AuthContext } from '../context/AuthContext'
 
 
 function MainMenu() {
@@ -12,6 +13,8 @@ function MainMenu() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(false)
+    
+    const {logout} = useContext(AuthContext)
 
 
     useEffect(() => {
@@ -90,6 +93,10 @@ function MainMenu() {
         setRefresh((prev) => !prev)
     }
 
+    const handleLogout = () => {
+        logout()
+    }
+
     return (
         <div className='bg-slate-100 min-h-screen'>
             <div className='max-w-7xl mx-auto p-4 flex flex-col items-center' >
@@ -105,6 +112,11 @@ function MainMenu() {
                 </div>
 
                 <div className='bg-white flex flex-col items-center justify-center w-[450px] mt-8 gap-4 py-10 px-6 rounded-lg shadow-lg '>
+
+                    <div className='flex justify-between w-full px-4 pb-4 '>
+                        <h1 className='font-semibold text-lg'>Todo List</h1>
+                        <button onClick={handleLogout} className='text-white px-4 py-1 bg-red-600 rounded-md hover:bg-red-700'>Logout</button>
+                    </div>
 
                     {/* tambah todo */}
                     <div className='flex gap-2 w-full'>

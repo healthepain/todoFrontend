@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 function Register() {
 
@@ -207,12 +208,12 @@ function Register() {
         {/* Footer / Link Login */}
         <p className="text-center text-xs text-slate-500 mt-6">
           Sudah punya akun?{" "}
-          <a
-            href="#"
+          <Link
+            to="/login"
             className="text-indigo-600 font-semibold hover:underline"
           >
             Masuk di sini
-          </a>
+          </Link>
         </p>
 
       </div>

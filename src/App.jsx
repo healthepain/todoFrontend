@@ -21,13 +21,12 @@ function App() {
           <Routes>
             <Route path='/login' element={<Login />}>Login</Route>
             <Route path='/register' element={<Register />}>Login</Route>
+            <Route path='/' element={<Home />}>Home</Route>
 
-            <Route path='/' element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>}>Home</Route>
-            <Route path='/todo' element={<MainMenu />}>Main Menu</Route>
-            <Route path='/api' element={<FetchApi />}>Fetch Api</Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path='/todo' element={<MainMenu />}>Main Menu</Route>
+              <Route path='/api' element={<FetchApi />}>Fetch Api</Route>
+            </Route>
 
             <Route path='*' element={<h1>Not Found</h1>}></Route>
           </Routes>

@@ -22,6 +22,12 @@ export default function Home() {
                     >
                         Register
                     </Link>
+                    <Link
+                        to="/login"
+                        className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                    >
+                        Login
+                    </Link>
 
                     <NavLink
                         to="/todo"
