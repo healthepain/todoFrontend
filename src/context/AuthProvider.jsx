@@ -4,9 +4,13 @@ import { registerUser, loginUser } from '../services/AuthService'
 import { useNavigate } from 'react-router-dom'
 
 function AuthProvider({ children }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return Boolean(localStorage.getItem("token"));
+    });
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem("token") || "";
+    });
     const [user, setUser] = useState(null)
-    const [token, setToken] = useState("")
     const navigate = useNavigate()
 
     const login = async (email, password) => {
@@ -22,7 +26,7 @@ function AuthProvider({ children }) {
 
             setToken(tokenResponse)
             localStorage.setItem("token", tokenResponse)
-            
+
             setUser(userParam)
             setIsAuthenticated(true)
             navigate("/todo")
