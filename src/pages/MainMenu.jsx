@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import Todos from '../components/Todos'
 import { useMutation } from "@tanstack/react-query"
 import { Link, NavLink } from 'react-router-dom'
-import { getTodos, createTodo, updateTodo, deleteTodo } from '../services/TodoService'
+import { createTodo, updateTodo, updateTodoByUserId, deleteTodo, deleteTodoByUserId, getTodosByUserId } from '../services/TodoService'
 import { AuthContext } from '../context/AuthContext'
 
 
@@ -13,8 +13,10 @@ function MainMenu() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(false)
-    
-    const {logout} = useContext(AuthContext)
+    const [titleError, setTitleError] = useState("")
+    const [image, setImage] = useState(null)
+
+    const { user, logout } = useContext(AuthContext)
 
 
     useEffect(() => {
@@ -23,8 +25,13 @@ function MainMenu() {
             try {
 
                 setLoading(true)
+                setError("")
 
-                const todos = await getTodos()
+                if (!user?.id) {
+                    throw new Error("Data pengguna tidak ditemukan. Silakan login kembali.")
+                }
+
+                const todos = await getTodosByUserId(user.id)
 
                 settodos(todos.map((todo) => {
                     return {
@@ -32,12 +39,13 @@ function MainMenu() {
                         title: todo.title,
                         status: todo.is_completed ? "complete" : "pending",
                         is_completed: todo.is_completed,
+                        image: todo.image,
                     }
                 }))
 
 
             } catch (e) {
-                setError(e)
+                setError(e?.response?.data?.message || e.message || "Gagal memuat todo.")
             } finally {
                 // setLoading(false)
                 console.log("done");
@@ -46,7 +54,7 @@ function MainMenu() {
 
         }
         fetchApi()
-    }, [refresh])
+    }, [refresh, user?.id])
 
 
 
@@ -66,18 +74,34 @@ function MainMenu() {
 
     const mutation = useMutation({
         mutationFn: async () => {
-            await createTodo({
-                title: todoInput,
-                user_id: 1,
+            const formData = new FormData()
+            formData.append("title", todoInput)
+            formData.append("user_id", 1)
 
-            })
+            if (image) {
+                formData.append("image", image)
+            }
+
+
+            await createTodo(formData)
             setTodoInput("")
+            setImage(null)
             setRefresh((prev) => !prev)
         }
     })
 
     const onAddTodo = () => {
-        mutation.mutate()
+        if (todoInput.trim().length < 5) {
+            setTitleError("Title todo minimal harus 5 karakter");
+            return;
+        }
+
+        mutation.mutate({
+            title: todoInput.trim()
+        });
+
+        setTodoInput("");
+        setTitleError("");
     }
 
     const onDeleteTodo = async (id) => {
@@ -95,6 +119,73 @@ function MainMenu() {
 
     const handleLogout = () => {
         logout()
+    }
+
+    const handleChangeTodoInput = (e) => {
+        const value = e.target.value
+        setTodoInput(value)
+
+        if (value.trim().length < 5) {
+            setTitleError("Title todo minimal harus 5 karakter")
+        } else {
+            setTitleError("")
+        }
+    }
+
+    const handleUpdateByUserId = () => {
+        const updateTodos = async () => {
+
+            try {
+
+                setLoading(true)
+
+                const result = await updateTodoByUserId(user.id, true)
+
+                if (result.message === "Success") {
+                    //set todos jadi completed semua
+                    settodos((prev) =>
+                        prev.map(todo => {
+                            return {
+                                ...todo,
+                                status: "Completed",
+                                is_completed: true,
+                            }
+                        })
+                    )
+                }
+            } catch (e) {
+                setError(e?.response?.data?.message || e.message || "Gagal mengupdate todo.")
+            } finally {
+                // setLoading(false)
+                console.log("done");
+                setLoading(false)
+            }
+
+        }
+        updateTodos()
+    }
+
+    const handleDeleteByUserId = () => {
+        const deleteTodos = async () => {
+
+            try {
+
+                setLoading(true)
+
+                const result = await deleteTodoByUserId(user.id)
+
+
+            } catch (e) {
+                setError(e?.response?.data?.message || e.message || "Gagal mengupdate todo.")
+            } finally {
+                // setLoading(false)
+                console.log("done");
+                setLoading(false)
+                setRefresh((prev) => !prev)
+            }
+
+        }
+        deleteTodos()
     }
 
     return (
@@ -124,9 +215,13 @@ function MainMenu() {
                             type="text"
                             placeholder="Masukkan todo..."
                             value={todoInput}
-                            onChange={(e) => setTodoInput(e.target.value)} />
+                            onChange={handleChangeTodoInput} />
                         <button className="bg-blue-600 text-white font-semibold px-4 py-1 rounded-md shadow-md hover:bg-blue-800" onClick={onAddTodo}>  tambah</button>
                     </div>
+
+                    <input type="file" accept='image/*' onChange={(e) => setImage(e.target.files[0])} />
+
+                    {titleError && <div>{titleError}</div>}
 
                     <div className='flex gap-2 items-center justify-center w-full'>
                         <button className="bg-blue-600 text-white font-semibold w-full py-1 rounded-md shadow-md hover:bg-blue-800" onClick={() => setFilter("all")}>All</button>
@@ -146,6 +241,10 @@ function MainMenu() {
                             />
 
                         ))}
+                        <div className='flex justify-between mt-4'>
+                            <button onClick={handleUpdateByUserId} className='bg-green-700 py-2 px-3 rounded-md hover:bg-green-950 text-white font-semibold'>Completed All</button>
+                            <button onClick={handleDeleteByUserId} className='bg-red-700 py-2 px-3 rounded-md hover:bg-red-950 text-white font-semibold'>Delete All</button>
+                        </div>
                     </div>
                 </div>
             </div>

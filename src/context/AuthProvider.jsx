@@ -2,15 +2,27 @@ import { useState } from 'react'
 import { AuthContext } from "./AuthContext"
 import { registerUser, loginUser } from '../services/AuthService'
 import { useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode';
+
+const getUserFromToken = (token) => {
+    if (!token) return null;
+
+    try {
+        return jwtDecode(token);
+    } catch {
+        return null;
+    }
+}
 
 function AuthProvider({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return Boolean(localStorage.getItem("token"));
+        const storedToken = localStorage.getItem("token");
+        return Boolean(getUserFromToken(storedToken));
     });
     const [token, setToken] = useState(() => {
         return localStorage.getItem("token") || "";
     });
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(() => getUserFromToken(localStorage.getItem("token")))
     const navigate = useNavigate()
 
     const login = async (email, password) => {
@@ -27,7 +39,9 @@ function AuthProvider({ children }) {
             setToken(tokenResponse)
             localStorage.setItem("token", tokenResponse)
 
-            setUser(userParam)
+            const userDecoded = jwtDecode(tokenResponse)
+
+            setUser(userDecoded)
             setIsAuthenticated(true)
             navigate("/todo")
         } catch (error) {
@@ -57,7 +71,7 @@ function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, register, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, register, logout, user }}>
             {children}
         </AuthContext.Provider>
     )

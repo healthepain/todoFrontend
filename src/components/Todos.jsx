@@ -5,6 +5,13 @@ function Todos({ todo, onDeleteTodo, onEditTodo }) {
       className="flex justify-between border border-slate-400 rounded-md px-4 py-2"
       onClick={() => onEditTodo(todo)}
     >
+      {todo.image && (
+        <img
+          src={`${import.meta.env.VITE_API_URL}/${todo.image}`}
+          alt="todo"
+          className="w-16 object-cover mr-2 rounded"
+        />
+      )}
       <h3 className="text-gray-500 text-lg font-semibold">
         {todo.title} - {todo.status}
       </h3>
